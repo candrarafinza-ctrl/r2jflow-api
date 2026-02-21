@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R2J FLOW MONITORING</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  text-align: center;
+}
+
+header {
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.4);
+}
+
+.container {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  padding: 30px;
+  border-radius: 15px;
+  width: 250px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+.card h2 {
+  margin: 10px 0;
+  font-size: 22px;
+}
+
+.value {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.safe {
+  color: #00ff88;
+}
+
+.warning {
+  color: #ff4444;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+R2J FLOW - SISTEM MONITORING BANJIR
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2>Status Level</h2>
+    <div id="status" class="value">--</div>
+  </div>
+
+  <div class="card">
+    <h2>Ketinggian Air</h2>
+    <div id="tinggi" class="value">-- cm</div>
+  </div>
+
+  <div class="card">
+    <h2>Deteksi Air</h2>
+    <div id="water" class="value">--</div>
+  </div>
+
+</div>
+
+<script>
+async function loadData() {
+  try {
+    const response = await fetch("/latest");
+    const data = await response.json();
+
+    if (!data) return;
+
+    const statusEl = document.getElementById("status");
+    const tinggiEl = document.getElementById("tinggi");
+    const waterEl = document.getElementById("water");
+
+    statusEl.innerText = data.status;
+    tinggiEl.innerText = data.tinggi_air + " cm";
+    waterEl.innerText = data.water_level;
+
+    if (data.status === "WASPADA") {
+      statusEl.className = "value warning";
+    } else {
+      statusEl.className = "value safe";
+    }
+
+  } catch (error) {
+    console.error("Error loading data:", error);
+  }
+}
+
+loadData();
+setInterval(loadData, 5000); // refresh tiap 5 detik
+</script>
+
+</body>
+</html>
