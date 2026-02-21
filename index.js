@@ -1,13 +1,13 @@
 const express = require("express");
 const { Pool } = require("pg");
+const path = require("path");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// 🔐 Ambil API Key dari environment
+// 🔐 Ambil API Key dari Railway
 const API_KEY = process.env.API_KEY;
 
-// Validasi kalau API_KEY belum diset di Railway
 if (!API_KEY) {
   console.error("❌ API_KEY is not set in environment variables!");
   process.exit(1);
@@ -20,9 +20,15 @@ const pool = new Pool({
 });
 
 /* ===================================================== */
+/* ================= SERVE FRONTEND ==================== */
+
+// Folder public untuk file HTML
+app.use(express.static(path.join(__dirname, "public")));
+
+/* ===================================================== */
 /* ================= ROOT TEST ========================= */
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("R2J Flow API is running");
 });
 
@@ -33,12 +39,12 @@ app.get("/update", async (req, res) => {
 
   const { api_key, tinggi, status, water } = req.query;
 
-  // 🔐 WAJIB ADA API KEY
+  // 🔐 Wajib ada API key
   if (!api_key) {
     return res.status(401).send("API Key required");
   }
 
-  // 🔐 COCOKKAN API KEY
+  // 🔐 Validasi API key
   if (api_key !== API_KEY) {
     return res.status(401).send("Unauthorized");
   }
@@ -75,7 +81,11 @@ app.get("/latest", async (req, res) => {
       "SELECT * FROM data_air ORDER BY id DESC LIMIT 1"
     );
 
-    res.json(result.rows[0] || { message: "No data yet" });
+    if (result.rows.length === 0) {
+      return res.json({ message: "No data yet" });
+    }
+
+    res.json(result.rows[0]);
 
   } catch (err) {
 
